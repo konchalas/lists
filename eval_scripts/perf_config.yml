@@ -1,0 +1,36 @@
+config:
+        # rootdir for the code
+        code_dir: /home/konstantinos/Insync/Thesis/lockfree-list/eval_scripts/
+        # the dir where the code is
+        code_dirname: build
+        # dir where to copy results at the end (should exist)
+        result_dir: /home/konstantinos/Insync/Thesis/lockfree-list/experiments/results
+        # dir where results are stored during the runs
+        result_dir_tmp: /tmp/konstantinos_res
+        # dir where code is compiled
+        work_dir: /tmp/konstantinos_code
+
+machine_config:
+        nb_numa_nodes: 4
+        core_per_node: 12
+
+test:
+        nb_runs: 8
+        # can be 'test' or 'alt'
+        test_name: test
+        duration: 10
+        random: 1
+
+parameters:
+        algo: algo_w_flush algo_wo_flush lazy_list
+        nb_threads: 1 2 4 8 16
+        max_items: 1024
+        numa_config: FT INTERLEAVE
+        mem_alloc: PT TC
+        bucket_size: 8
+        load: 0.9
+        pool_type: 1 3
+        heap_size: 1 8
+        gc_size: 256
+        liu_bucket_size: 2 8
+
