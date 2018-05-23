@@ -36,7 +36,7 @@ static volatile AO_t stop;
 typedef intptr_t val_t;
 #define VAL_MIN                         INT_MIN
 #define VAL_MAX                         INT_MAX
-#define FLUSH_FLAG
+#define FLUSH_FLAG 1
 
 typedef struct node {
 	val_t val;

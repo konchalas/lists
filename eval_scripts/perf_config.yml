@@ -1,6 +1,6 @@
 config:
         # rootdir for the code
-        code_dir: /home/konstantinos/Insync/Thesis/lockfree-list/eval_scripts/
+        code_dir: /home/konstantinos/Insync/Thesis/lockfree-list/
         # the dir where the code is
         code_dirname: build
         # dir where to copy results at the end (should exist)
