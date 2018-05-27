@@ -57,6 +57,8 @@ os.chdir(cfg['config']['code_dir']+'/'+cfg['config']['code_dirname'])
 
 experiment_counter=0
 
+nb_cores_per_cpu = str(cfg['parameters']['nb_cores_per_cpu'])
+
 with open(cfg['config']['result_dir']+"/perf_compare_"+PREFIXMAKE+"_"+str(cfg['parameters']['max_items']).replace(' ','-')+"_r"+str(cfg['test']['random'])+"_"+STARTDATE+".csv", 'w') as csvfile:
     csvfile.write("test_id,algo,nbthreads,max_key,load,throughput\n")
     for max_key in str(cfg['parameters']['max_items']).split(' '):
@@ -69,7 +71,7 @@ with open(cfg['config']['result_dir']+"/perf_compare_"+PREFIXMAKE+"_"+str(cfg['p
 
                                 print("config: %s %s %s %s"%(algo, str(cfg['parameters']['nb_threads']), max_key, load))
 
-                                command_to_execute= cfg['config']['code_dir'] + cfg['config']['code_dirname'] + "/" + algo+" --N_THREADS="+nb_threads+" --MAX_KEY="+max_key+" --NLOOKUP="+load+ " --DURATION="+str(cfg['test']['duration'])
+                                command_to_execute= cfg['config']['code_dir'] + cfg['config']['code_dirname'] + "/" + algo+" --N_THREADS="+nb_threads+ " --N_CORES_PER_CPU=" + nb_cores_per_cpu + " --MAX_KEY="+max_key+" --NLOOKUP="+load+ " --DURATION="+str(cfg['test']['duration'])
 
                                 print(command_to_execute)
                                 call(shlex.split(command_to_execute),stdout=DEVNULL,stderr=STDOUT)

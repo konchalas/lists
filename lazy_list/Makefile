@@ -6,7 +6,7 @@ CC		= gcc
 INCLUDES  += -I$(ROOTDIR)include -I$(ROOTDIR) -I$(LOCALDIR)
 BINS = $(OBJDIR)/lazy_list
 # VERSION = DEBUG
-MODE = LI
+MODE = LRI
 
 # Version
 CFLAGS += $(INCLUDES)  -pthread -std=gnu11 -D_GNU_SOURCE
@@ -17,6 +17,17 @@ else
 endif
 
 ifeq ($(MODE),LI)
+OBJECTS := \
+	$(OBJDIR)/coupling.o	    \
+	$(OBJDIR)/intset.o	    \
+	$(OBJDIR)/lazy.o	    \
+	$(OBJDIR)/linkedlist-lock.o	    \
+	$(OBJDIR)/bench_LI.o	    \
+	$(OBJDIR)/system.o	    \
+  $(OBJDIR)/fastrand.o 	\
+  $(OBJDIR)/bench_utils.o 	\
+  $(OBJDIR)/test.o
+else ifeq ($(MODE),LRI)
 OBJECTS := \
 	$(OBJDIR)/coupling.o	    \
 	$(OBJDIR)/intset.o	    \
@@ -64,6 +75,9 @@ $(OBJDIR)/bench_check.o: $(ROOTDIR)benchmarks/bench_check.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 $(OBJDIR)/bench_LI.o: $(ROOTDIR)benchmarks/bench_LI.c
+	$(CC) $(CFLAGS) -c -o $@ $^
+
+$(OBJDIR)/bench_LRI.o: $(ROOTDIR)benchmarks/bench_LRI.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 $(OBJDIR)/bench_utils.o: $(ROOTDIR)benchmarks/bench_utils.c

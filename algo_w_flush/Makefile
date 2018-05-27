@@ -6,7 +6,7 @@ CC		= gcc
 INCLUDES  += -I$(ROOTDIR)include -I$(ROOTDIR) -I$(LOCALDIR)
 BINS = $(OBJDIR)/algo_w_flush
 # VERSION = DEBUG
-MODE = LI
+MODE = LRI
 
 # Version
 CFLAGS += $(INCLUDES)  -pthread -std=gnu11 -D_GNU_SOURCE
@@ -21,6 +21,15 @@ OBJECTS := \
 	$(OBJDIR)/linkedlist.o	    \
 	$(OBJDIR)/harris.o	    \
 	$(OBJDIR)/bench_LI.o	    \
+	$(OBJDIR)/system.o	    \
+  $(OBJDIR)/fastrand.o 	\
+  $(OBJDIR)/bench_utils.o 	\
+  $(OBJDIR)/test.o
+else ifeq ($(MODE),LRI)
+OBJECTS := \
+	$(OBJDIR)/linkedlist.o	    \
+	$(OBJDIR)/harris.o	    \
+	$(OBJDIR)/bench_LRI.o	    \
 	$(OBJDIR)/system.o	    \
   $(OBJDIR)/fastrand.o 	\
   $(OBJDIR)/bench_utils.o 	\
@@ -53,6 +62,9 @@ $(OBJDIR)/harris.o: $(LOCALDIR)harris.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 $(OBJDIR)/bench_LI.o: $(ROOTDIR)benchmarks/bench_LI.c
+	$(CC) $(CFLAGS) -c -o $@ $^
+
+$(OBJDIR)/bench_LRI.o: $(ROOTDIR)benchmarks/bench_LRI.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 $(OBJDIR)/bench_check.o: $(ROOTDIR)benchmarks/bench_check.c

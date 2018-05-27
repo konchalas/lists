@@ -34,6 +34,7 @@
 #define BUCKET_DEPTH 10
 
 int N_THREADS;
+int N_CORES_PER_CPU;
 int MAX_KEY;
 int DURATION;
 float NLOOKUP;
@@ -100,20 +101,53 @@ void* my_thread(void* threadid)
 
     PRINT_DEBUG_INIT();
 
+
     CPU_ZERO(&cpuset);
-    CPU_SET(compute_cpu_id(__thread_id) % USE_CPUS, &cpuset);
+#ifdef L3_AFFINITY
+    int thread_affinity[16];
+    if(N_THREADS == 2) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 8;
+    } else if (N_THREADS == 4) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 1;
+      thread_affinity[2] = 8;
+      thread_affinity[3] = 9;
+    } else if (N_THREADS == 8) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 1;
+      thread_affinity[2] = 2;
+      thread_affinity[3] = 3;
+      thread_affinity[4] = 8;
+      thread_affinity[5] = 9;
+      thread_affinity[6] = 10;
+      thread_affinity[7] = 11;
+      CPU_SET(compute_cpu_id(thread_affinity[__thread_id]), &cpuset);
+    } else {
+      CPU_SET(compute_cpu_id(__thread_id), &cpuset);
+    }
+#else
+    CPU_SET(compute_cpu_id(__thread_id), &cpuset);
+#endif
+
+
+
+
+
+
 #if (RANDOM==0)
     fastRandomSetSeed(time(NULL)+__thread_id*100);
 #else
     tinymt64_init(&randomvar, time(NULL)+__thread_id*100);
 #endif
 
+    printf("Pthrad self = %d\n", __thread_id);
     /* pin the thread to a core */
-    if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset))
-    {
-        fprintf(stderr, "Thread pinning failed!\n");
-        exit(1);
-    }
+    //    if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset))
+    //    {
+    //        fprintf(stderr, "Thread pinning failed!\n");
+    //        exit(1);
+    //    }
 
     /* wait for the others to initialize */
     int ret = pthread_barrier_wait(&init_barr);
@@ -157,6 +191,7 @@ void* my_thread(void* threadid)
 struct arguments
 {
   int nr_threads;
+  int nr_cores_per_cpu;
   int max_key;
   float nlookup;
   float duration;
@@ -175,6 +210,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     {
     case 'n':
       arguments->nr_threads = atoi(arg);
+      break;
+    case 'c':
+      arguments->nr_cores_per_cpu = atoi(arg);
       break;
     case 'k':
       arguments->max_key = atoi(arg);
@@ -200,6 +238,7 @@ static char args_doc[] = "[FILENAME]...";
 
 static struct argp_option options[] = { 
   { "N_THREADS", 'n', "COUNT", 0, "The number of threads to run the benchmark."},
+  { "N_CORES_PER_CPU", 'c', "COUNT", 0, "The number of cores per cpu."},
   { "MAX_KEY", 'k', "COUNT", 0, "The maximum number of elements we can have in our list."},
   { "NLOOKUP", 'l', "COUNT", 0, "The percentage of lookups to perform. e.g 0.9 for 90% lookups"},
   { "DURATION", 'd', "COUNT", 0, "The maximum number of elements we can have in our list."},
@@ -220,13 +259,14 @@ int main(int argc, char *argv[])
     argp_parse (&argp, argc, argv, 0, 0, &args);
 
     N_THREADS = args.nr_threads;
+    N_CORES_PER_CPU = args.nr_cores_per_cpu;
     MAX_KEY = args.max_key;
     NLOOKUP = args.nlookup;
     DURATION = args.duration;
 
     signal (SIGALRM, ALRMhandler);
 
-    printf("########## exp setup: \t %d threads \t %d cores \t %f nlookup \t %d duration\n",N_THREADS,USE_CPUS, NLOOKUP, DURATION);
+    printf("########## exp setup: \t %d threads \t %d cores \t %d cores per cpu \t %f nlookup \t %d duration\n",N_THREADS, USE_CPUS, N_CORES_PER_CPU, NLOOKUP, DURATION);
 
 
     testtime = DURATION;

@@ -24,6 +24,7 @@ test:
 parameters:
         algo: algo_w_flush algo_wo_flush lazy_list
         nb_threads: 1 2 4 8 16
+        nb_cores_per_cpu: 0
         max_items: 1024
         numa_config: FT INTERLEAVE
         mem_alloc: PT TC
