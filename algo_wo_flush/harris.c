@@ -25,9 +25,6 @@
 
 #include "harris.h"
 
-int count_success = 0;
-int count = 0;
-
 /*
  * harris_search looks for value key, it
  *  - returns right_node owning key(if present) or its immediately higher
@@ -36,6 +33,9 @@ int count = 0;
  * Encountered nodes that are marked as logically deleted are physically removed
  * from the list, yet not garbage collected.
  */
+
+
+
 node_t *search(intset_t *set, val_t key, node_t **left_node) {
 	node_t *left_node_next, *right_node;
 	left_node_next = set->head;
@@ -68,7 +68,6 @@ search_again:
 		if (ATOMIC_CAS_MB(&(*left_node)->next, 
 						  left_node_next, 
 						  right_node)) {
-      _mm_clflush(&(*left_node)->next);
 			if (right_node->next && is_marked_ref((long) right_node->next))
 				goto search_again;
 			else return right_node;
@@ -96,7 +95,6 @@ int contains(intset_t *set, val_t key, val_t *value) {
   return false;
 }
 
-int count;
 /*
  * harris_contains inserts a new node with the given value key in the list
  * (if the value was absent) or does nothing (if the value is already present).
@@ -104,7 +102,6 @@ int count;
 int insert(intset_t *set, val_t key, val_t value) {
 	node_t *newnode, *right_node, *left_node;
 	left_node = set->head;
-  count++;
 	do {
 		right_node = search(set, key, &left_node);
 		if (right_node->key == key)
@@ -113,7 +110,6 @@ int insert(intset_t *set, val_t key, val_t value) {
 		/* mem-bar between node creation and insertion */
 		AO_nop_full();
 		if (ATOMIC_CAS_MB(&left_node->next, right_node, newnode)) {
-      count_success++;
 			return 1;
     }
 	} while(1);

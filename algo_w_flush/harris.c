@@ -59,7 +59,7 @@ search_again:
         t->flushed = true;
       }
 #else
-      _mm_clflush(&curr->next);
+      _mm_clflush(&t->next);
 #endif
 			t_next = t->next;
 		} while (is_marked_ref((long) t_next) || (t->key < key));
