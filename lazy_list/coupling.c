@@ -45,6 +45,8 @@ int lockc_delete(intset_l_t *set, val_t val) {
 	while (next->val < val) {
 		UNLOCK(&curr->lock);
 		curr = next;
+    if (next->next == NULL)
+      break;
 		LOCK(&next->next->lock);
 		next = next->next;
 	}

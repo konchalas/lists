@@ -5,7 +5,7 @@ OBJDIR ?= $(ROOTDIR)build
 CC		= gcc
 INCLUDES  += -I$(ROOTDIR)include -I$(ROOTDIR) -I$(LOCALDIR)
 BINS = $(OBJDIR)/lazy_list
-# VERSION = DEBUG
+#VERSION = DEBUG
 MODE = LRI
 
 # Version
@@ -33,7 +33,7 @@ OBJECTS := \
 	$(OBJDIR)/intset.o	    \
 	$(OBJDIR)/lazy.o	    \
 	$(OBJDIR)/linkedlist-lock.o	    \
-	$(OBJDIR)/bench_LI.o	    \
+	$(OBJDIR)/bench_LRI.o	    \
 	$(OBJDIR)/system.o	    \
   $(OBJDIR)/fastrand.o 	\
   $(OBJDIR)/bench_utils.o 	\
