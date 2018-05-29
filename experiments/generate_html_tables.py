@@ -10,6 +10,8 @@ with open('results/perf_compare_test_10_r1_2018-05-17-13:15:27.csv') as csvfile:
     for row in reader:
         if(int(row['test_id']) % experiment_columns == 0):
             exp_counter += 1
+            list1 = []
+            list2 = []
             print('<h1>{0}. {1} load ,{2} keys</h1>'.format(exp_counter, row['load'], row['max_key']))
 
         if (row['algo'] == 'algo_w_flush'):
@@ -19,8 +21,10 @@ with open('results/perf_compare_test_10_r1_2018-05-17-13:15:27.csv') as csvfile:
         if (row['algo'] == 'algo_wo_flush'):
             algo2 = 'algo_wo_flush'
             list2.append(row['throughput'])
-    table_data = ( list(zip([1, 2, 4, 8, 16], list1, list2)))
-    htmlcode = HTML.table(table_data, header_row=['nr_threads', algo1, algo2])
-    print (htmlcode)
+
+        if (int(row['test_id']) % (experiment_columns - 1) == 0):
+            table_data = ( list(zip([1, 2, 4, 8, 16], list1, list2)))
+            htmlcode = HTML.table(table_data, header_row=['nr_threads', algo1, algo2])
+            print (htmlcode)
 
         
