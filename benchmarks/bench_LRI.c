@@ -32,6 +32,7 @@
 
 #define DEPTH 10
 #define BUCKET_DEPTH 10
+#define NB_NUMA_NODES 2 
 
 int N_THREADS;
 int N_CORES_PER_CPU;
@@ -61,6 +62,9 @@ void ALRMhandler (int sig)
 {
     main_work = 0;
 }
+
+int thread_affinity[16];
+
 
 void* my_thread(void* threadid)
 {
@@ -103,32 +107,7 @@ void* my_thread(void* threadid)
 
 
     CPU_ZERO(&cpuset);
-#ifdef L3_AFFINITY
-    int thread_affinity[16];
-    if(N_THREADS == 2) {
-      thread_affinity[0] = 0;
-      thread_affinity[1] = 8;
-    } else if (N_THREADS == 4) {
-      thread_affinity[0] = 0;
-      thread_affinity[1] = 1;
-      thread_affinity[2] = 8;
-      thread_affinity[3] = 9;
-    } else if (N_THREADS == 8) {
-      thread_affinity[0] = 0;
-      thread_affinity[1] = 1;
-      thread_affinity[2] = 2;
-      thread_affinity[3] = 3;
-      thread_affinity[4] = 8;
-      thread_affinity[5] = 9;
-      thread_affinity[6] = 10;
-      thread_affinity[7] = 11;
-      CPU_SET(compute_cpu_id(thread_affinity[__thread_id]), &cpuset);
-    } else {
-      CPU_SET(compute_cpu_id(__thread_id), &cpuset);
-    }
-#else
-    CPU_SET(compute_cpu_id(__thread_id), &cpuset);
-#endif
+    CPU_SET(compute_cpu_id(thread_affinity[__thread_id]), &cpuset);
 
 #if (RANDOM==0)
     fastRandomSetSeed(time(NULL)+__thread_id*100);
@@ -146,25 +125,32 @@ void* my_thread(void* threadid)
 
     printf("starting loading the table for thread %d\n",__thread_id);
 
-    int subset = (max_key_val);
-        
-    struct timespec before,after;
+    /* in this test, we start from a half full table */
+    /* check if thread should participate in loading the table */
+    if(__thread_id < NB_NUMA_NODES){
+    
+      printf("starting loading the table for thread %d\n",__thread_id);
 
-    clock_gettime(CLOCK_REALTIME, &before);
+      int subset = (max_key_val)/NB_NUMA_NODES;
+        
+      struct timespec before,after;
+
+      clock_gettime(CLOCK_REALTIME, &before);
     
-    for(int i=0; i < subset/2;i++){
+      for(int i=0; i < subset/2;i++){
 #if (RANDOM==0)
-      key = fastRandomRange32(0, max_key_val);
+        key = fastRandomRange32(0, max_key_val);
 #else
-      key = max_key_val * tinymt64_generate_double(&randomvar);
+        key = max_key_val * tinymt64_generate_double(&randomvar);
 #endif
-      table_insert(table,key,key);
+        table_insert(table,key,key);
+      }
+    
+      clock_gettime(CLOCK_REALTIME, &after);
+    
+      printf("thread %d: time %.2lf\n",__thread_id, ((double)after.tv_sec - before.tv_sec)+((double)after.tv_nsec - before.tv_nsec)/(1000*1000*1000));
     }
-    
-    clock_gettime(CLOCK_REALTIME, &after);
-    
-    printf("thread %d: time %.2lf\n",__thread_id, ((double)after.tv_sec - before.tv_sec)+((double)after.tv_nsec - before.tv_nsec)/(1000*1000*1000));
-    
+
     /* wait for the others to initialize */
     int ret = pthread_barrier_wait(&init_barr);
     if (ret != 0 && ret != PTHREAD_BARRIER_SERIAL_THREAD)
@@ -271,6 +257,42 @@ int main(int argc, char *argv[])
     pthread_t* thr;
     int testtime;
     struct arguments args;
+
+    if(N_THREADS == 2) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 8;
+    } else if (N_THREADS == 4) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 8;
+      thread_affinity[2] = 1;
+      thread_affinity[3] = 9;
+    } else if (N_THREADS == 8) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 8;
+      thread_affinity[2] = 1;
+      thread_affinity[3] = 9;
+      thread_affinity[4] = 2;
+      thread_affinity[5] = 10;
+      thread_affinity[6] = 3;
+      thread_affinity[7] = 11;
+    } else if (N_THREADS == 16) {
+      thread_affinity[0] = 0;
+      thread_affinity[1] = 8;
+      thread_affinity[2] = 1;
+      thread_affinity[3] = 9;
+      thread_affinity[4] = 2;
+      thread_affinity[5] = 10;
+      thread_affinity[6] = 3;
+      thread_affinity[7] = 11;
+      thread_affinity[8] = 4;
+      thread_affinity[9] = 12;
+      thread_affinity[10] = 5;
+      thread_affinity[11] = 13;
+      thread_affinity[12] = 6;
+      thread_affinity[13] = 14;
+      thread_affinity[14] = 7;
+      thread_affinity[15] = 15;
+    }
 
     argp_parse (&argp, argc, argv, 0, 0, &args);
 

@@ -18,7 +18,7 @@ test:
         nb_runs: 8
         # can be 'test' or 'alt'
         test_name: test
-        duration: 10
+        duration: 1
         random: 1
 
 parameters:

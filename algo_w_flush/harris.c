@@ -99,7 +99,11 @@ int contains(intset_t *set, val_t key, val_t *value) {
   if (curr->key == key) {
     *value = curr->val;
     _mm_clflush(&pred->next);
-    return !is_marked_ref((long) curr->next);
+    // Flush only if the node is logically removed
+    if (is_marked_ref((long) curr->next)) {
+      _mm_clflush(&curr->next);
+      return false;
+    } else return true;
   }
 
   return false;

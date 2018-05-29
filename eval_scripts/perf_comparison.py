@@ -58,6 +58,7 @@ os.chdir(cfg['config']['code_dir']+'/'+cfg['config']['code_dirname'])
 experiment_counter=0
 
 nb_cores_per_cpu = str(cfg['parameters']['nb_cores_per_cpu'])
+nb_runs = str(cfg['test']['nb_runs'])
 
 with open(cfg['config']['result_dir']+"/perf_compare_"+PREFIXMAKE+"_"+str(cfg['parameters']['max_items']).replace(' ','-')+"_r"+str(cfg['test']['random'])+"_"+STARTDATE+".csv", 'w') as csvfile:
     csvfile.write("test_id,algo,nbthreads,max_key,load,throughput\n")
@@ -73,17 +74,22 @@ with open(cfg['config']['result_dir']+"/perf_compare_"+PREFIXMAKE+"_"+str(cfg['p
 
                                 command_to_execute= cfg['config']['code_dir'] + cfg['config']['code_dirname'] + "/" + algo+" --N_THREADS="+nb_threads+ " --N_CORES_PER_CPU=" + nb_cores_per_cpu + " --MAX_KEY="+max_key+" --NLOOKUP="+load+ " --DURATION="+str(cfg['test']['duration'])
 
-                                print(command_to_execute)
-                                call(shlex.split(command_to_execute),stdout=DEVNULL,stderr=STDOUT)
+                                total_throughput = 0
+                                for _ in range(int(nb_runs)):
+                                    print(command_to_execute)
+                                    call(shlex.split(command_to_execute),stdout=DEVNULL,stderr=STDOUT)
 
-                                result=check_output(shlex.split(command_to_execute), universal_newlines=True)
+                                    result=check_output(shlex.split(command_to_execute), universal_newlines=True)
 
-                                for line in result.split('\n'):
-                                    if "throughput" in line:
-                                        throughput=line.replace('\t',' ').split(' ')[1]
+                                    for line in result.split('\n'):
+                                        if "throughput" in line:
+                                            throughput=line.replace('\t',' ').split(' ')[1]
 
-                                print("Throughtput: ", throughput)
+                                            print("Throughput: ", throughput)
+                                            total_throughput += int(throughput)
 
-                                csvfile.write("{0},{1},{2},{3},{4},{5}\n".format(experiment_counter, algo, nb_threads, max_key, load, throughput))
+
+                                print("Average throughtput: {0}".format(total_throughput/int(nb_runs)))
+                                csvfile.write("{0},{1},{2},{3},{4},{5}\n".format(experiment_counter, algo, nb_threads, max_key, load, total_throughput / int(nb_runs)))
 
                                 experiment_counter += 1
