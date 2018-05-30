@@ -80,19 +80,14 @@ search_again:
  * harris_contains returns whether there is a node in the list owning value key.
  */
 int contains(intset_t *set, val_t key, val_t *value) {
-  val_t _key = key;
-  node_t *curr = set->head;
-  node_t *pred = curr;
-  while (curr->key < _key) {
-    pred = curr;
-    curr = (node_t*)get_unmarked_ref((long) curr->next);
-  }
-  if (curr->key == key) {
-    *value = curr->val;
-    return !is_marked_ref((long) curr->next);
-  }
-
-  return false;
+	node_t *right_node, *left_node;
+	left_node = set->head;
+	
+	right_node = search(set, *value, &left_node);
+	if ((!right_node->next) || right_node->key != key)
+		return 0;
+	else 
+		return 1;
 }
 
 /*
