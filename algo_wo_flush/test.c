@@ -15,14 +15,12 @@ int test() {
 
 
 int table_insert(void *table, int64_t key, int64_t value){
-  insert(table, key, value);
-  return 0;
+  return insert(table, key, value);
 }
 
 
 int table_remove(void *table, int64_t key){
-  remove_(table, key);
-  return 0;
+  return remove_(table, key);
 }
 
 int table_lookup(void *table, int64_t key, int64_t *value){

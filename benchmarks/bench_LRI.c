@@ -41,9 +41,9 @@ int DURATION;
 float NLOOKUP;
 unsigned long add;
 unsigned long added;
-unsigned long remove_;
+unsigned long remove__;
 unsigned long removed;
-unsigned long contains;
+unsigned long contains_;
 unsigned long found;
 
 
@@ -183,14 +183,14 @@ void* my_thread(void* threadid)
           if (table_remove(table, key)) {
             removed++;
           }
-          remove_++;
+          remove__++;
         }
         else{
             /*printf("******** LOOKUP %ld\n",key);*/
           if (table_lookup(table, key, &value)) {
             found++;
           }
-          contains++;
+          contains_++;
         }
     }
 
@@ -325,6 +325,14 @@ int main(int argc, char *argv[])
     ops = (int64_t*) malloc(N_THREADS * sizeof(int64_t));
     memset(ops, 0, N_THREADS * sizeof(int64_t));
 
+    add = 0;
+    added = 0;
+    remove__ = 0;
+    removed = 0;
+    contains_ = 0;
+    found = 0;
+
+
 
     if(pthread_barrier_init(&init_barr, NULL, N_THREADS+1))
     {
@@ -376,8 +384,8 @@ int main(int argc, char *argv[])
 
 
     printf("Add: %ld, added: %ld\n", add, added);
-    printf("Remove: %ld, removed: %ld\n", remove_, removed);
-    printf("Contains: %ld, found: %ld\n", contains, found);
+    printf("Remove: %ld, removed: %ld\n", remove__, removed);
+    printf("Contains: %ld, found: %ld\n", contains_, found);
 
     return 0;
 }
