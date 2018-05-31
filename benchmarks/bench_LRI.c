@@ -39,8 +39,12 @@ int N_CORES_PER_CPU;
 int MAX_KEY;
 int DURATION;
 float NLOOKUP;
-extern int count_success;
-extern int count;
+unsigned long add;
+unsigned long added;
+unsigned long remove_;
+unsigned long removed;
+unsigned long contains;
+unsigned long found;
 
 
 
@@ -170,14 +174,23 @@ void* my_thread(void* threadid)
 #endif
         if(op < 50){
             /*printf("******** INSERT %ld\n",key);*/
-            table_insert(table,key,key);
+          if (table_insert(table,key,key)) {
+            added++;
+          }
+          add++;
         }
         else if(op<100){
-            table_remove(table, key);
+          if (table_remove(table, key)) {
+            removed++;
+          }
+          remove_++;
         }
         else{
             /*printf("******** LOOKUP %ld\n",key);*/
-            table_lookup(table, key, &value);
+          if (table_lookup(table, key, &value)) {
+            found++;
+          }
+          contains++;
         }
     }
 
@@ -360,6 +373,11 @@ int main(int argc, char *argv[])
     printf("fairness: %f\n", ((float)maxops)/minops);
 
     printf("maxops: %lld \t minops: %lld\n", (long long int)maxops, (long long int)minops);
+
+
+    printf("Add: %ld, added: %ld\n", add, added);
+    printf("Remove: %ld, removed: %ld\n", remove_, removed);
+    printf("Contains: %ld, found: %ld\n", contains, found);
 
     return 0;
 }
