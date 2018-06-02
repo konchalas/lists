@@ -119,7 +119,7 @@ void* my_thread(void* threadid)
     tinymt64_init(&randomvar, time(NULL)+__thread_id*100);
 #endif
     
-    /* pin the thread to a core */
+    ///* pin the thread to a core */
     if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset))
     {
         fprintf(stderr, "Thread pinning failed!\n");
@@ -147,6 +147,7 @@ void* my_thread(void* threadid)
 #else
         key = max_key_val * tinymt64_generate_double(&randomvar);
 #endif
+	printf("Inserting %d\n", key);
         table_insert(table,key,key);
       }
     
@@ -177,17 +178,22 @@ void* my_thread(void* threadid)
           if (table_insert(table,key,key)) {
             added++;
           }
+//	printf("Inserting %d\n", key);
           add++;
         }
         else if(op<100){
           if (table_remove(table, key)) {
             removed++;
           }
+//	printf("Removing %d\n", key);
           remove__++;
         }
         else{
+//	printf("Searching %d\n", key);
             /*printf("******** LOOKUP %ld\n",key);*/
           if (table_lookup(table, key, &value)) {
+
+ //           printf("******** found%ld\n",key);
             found++;
           }
           contains_++;

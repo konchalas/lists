@@ -5,13 +5,13 @@
  *   Vincent Gramoli <vincent.gramoli@epfl.ch>
  * Description:
  *   Lock-free linkedlist implementation of Harris' algorithm
- *   "A Pragmatic Implementation of Non-Blocking Linked Lists"
+ *   "A Pragmatic Implementation of Non-Blocking Linked Lists" 
  *   T. Harris, p. 300-314, DISC 2001.
  *
  * Copyright (c) 2009-2010.
  *
  * harris.c is part of Synchrobench
- *
+ * 
  * Synchrobench is free software: you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation, version 2
@@ -26,17 +26,14 @@
 #include "harris.h"
 
 /*
- * harris_search looks for value key, it
- *  - returns right_node owning key(if present) or its immediately higher
- *    value present in the list (otherwise) and
- *  - sets the left_node to the node owning the value immediately lower than key.
+ * harris_search looks for value val, it
+ *  - returns right_node owning val (if present) or its immediately higher 
+ *    value present in the list (otherwise) and 
+ *  - sets the left_node to the node owning the value immediately lower than val. 
  * Encountered nodes that are marked as logically deleted are physically removed
  * from the list, yet not garbage collected.
  */
-
-
-
-node_t *search(intset_t *set, val_t key, node_t **left_node) {
+node_t *search(intset_t *set, val_t val, node_t **left_node) {
 	node_t *left_node_next, *right_node;
 	left_node_next = set->head;
 	
@@ -54,7 +51,7 @@ search_again:
 			t = (node_t *) get_unmarked_ref((long) t_next);
 			if (!t->next) break;
 			t_next = t->next;
-		} while (is_marked_ref((long) t_next) || (t->key < key));
+		} while (is_marked_ref((long) t_next) || (t->val < val));
 		right_node = t;
 		
 		/* Check that nodes are adjacent */
@@ -77,13 +74,13 @@ search_again:
 }
 
 /*
- * harris_contains returns whether there is a node in the list owning value key.
+ * harris_find returns whether there is a node in the list owning value val.
  */
 int contains(intset_t *set, val_t key, val_t *value) {
 	node_t *right_node, *left_node;
 	left_node = set->head;
 	
-	right_node = search(set, *value, &left_node);
+	right_node = search(set, key, &left_node);
 	if ((!right_node->next) || right_node->key != key)
 		return 0;
 	else 
@@ -91,47 +88,47 @@ int contains(intset_t *set, val_t key, val_t *value) {
 }
 
 /*
- * harris_contains inserts a new node with the given value key in the list
+ * harris_find inserts a new node with the given value val in the list
  * (if the value was absent) or does nothing (if the value is already present).
  */
-int insert(intset_t *set, val_t key, val_t value) {
+int insert(intset_t *set, val_t key, val_t val) {
 	node_t *newnode, *right_node, *left_node;
 	left_node = set->head;
+	
 	do {
 		right_node = search(set, key, &left_node);
 		if (right_node->key == key)
 			return 0;
-		newnode = new_node(key, value, right_node);
+		newnode = new_node(key, val, right_node);
 		/* mem-bar between node creation and insertion */
-		AO_nop_full();
-		if (ATOMIC_CAS_MB(&left_node->next, right_node, newnode)) {
+		AO_nop_full(); 
+		if (ATOMIC_CAS_MB(&left_node->next, right_node, newnode))
 			return 1;
-    }
 	} while(1);
 }
 
 /*
- * harris_contains deletes a node with the given value key(if the value is present)
+ * harris_find deletes a node with the given value val (if the value is present) 
  * or does nothing (if the value is already present).
  * The deletion is logical and consists of setting the node mark bit to 1.
  */
-int remove_(intset_t *set, val_t key) {
+int remove_(intset_t *set, val_t val) {
 	node_t *right_node, *right_node_next, *left_node;
 	left_node = set->head;
-
+	
 	do {
-		right_node = search(set, key, &left_node);
-		if (right_node->key != key)
+		right_node = search(set, val, &left_node);
+		if (right_node->val != val)
 			return 0;
 		right_node_next = right_node->next;
-		if (!is_marked_ref((long) right_node_next)){
-			if (ATOMIC_CAS_MB(&right_node->next,
-							  right_node_next,
-                        get_marked_ref((long) right_node_next))) {
+		if (!is_marked_ref((long) right_node_next))
+			if (ATOMIC_CAS_MB(&right_node->next, 
+							  right_node_next, 
+							  get_marked_ref((long) right_node_next)))
 				break;
-      }
-    }
 	} while(1);
+	if (!ATOMIC_CAS_MB(&left_node->next, right_node, right_node_next))
+		right_node = search(set, right_node->val, &left_node);
 	return 1;
 }
 

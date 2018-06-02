@@ -5,7 +5,7 @@ OBJDIR ?= $(ROOTDIR)build
 CC		= gcc
 INCLUDES  += -I$(ROOTDIR)include -I$(ROOTDIR) -I$(LOCALDIR)
 BINS = $(OBJDIR)/algo_wo_flush
-# VERSION = DEBUG
+#VERSION = DEBUG
 MODE = LRI
 
 # Version
