@@ -29,7 +29,7 @@ node_t *new_node(val_t key, val_t val, node_t *next)
   node->key = key;
   node->val = val;
   node->next = next;
-  node->flushed = false;
+  //node->flushed = false;
 
   return node;
 }
@@ -45,12 +45,7 @@ intset_t *set_new()
   }
   max = new_node(VAL_MAX, 0, NULL);
   min = new_node(VAL_MIN, 0, max);
-  // We will never have to flush the next pointer of the last element of the list
-  max->flushed = true;
   set->head = min;
-  _mm_clflush(set);
-  _mm_clflush(set->head);
-  _mm_clflush(set->head);
 
   return set;
 }

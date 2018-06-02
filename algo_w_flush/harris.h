@@ -30,6 +30,8 @@
  * HARRIS' LINKED LIST
  * ################################################################### */
 
+#define FLUSH_FLAG 1
+
 node_t *search(intset_t *set, val_t val, node_t **left_node);
 int contains(intset_t *set, val_t key, val_t *value);
 int insert(intset_t *set, val_t key, val_t value);

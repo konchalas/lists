@@ -40,6 +40,7 @@ typedef intptr_t val_t;
 typedef struct node {
 	val_t val;
 	val_t key;
+	bool flushed;
 	struct node *next;
 } node_t;
 

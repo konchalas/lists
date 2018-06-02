@@ -5,7 +5,7 @@ OBJDIR ?= $(ROOTDIR)build
 CC		= gcc
 INCLUDES  += -I$(ROOTDIR)include -I$(ROOTDIR) -I$(LOCALDIR)
 BINS = $(OBJDIR)/algo_w_flush
-# VERSION = DEBUG
+#VERSION = DEBUG
 MODE = LRI
 
 # Version
@@ -79,7 +79,7 @@ $(OBJDIR)/epoch.o: $(ROOTDIR)mem_interface/epoch.c
 $(OBJDIR)/gc.o: $(ROOTDIR)mem_interface/gc.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
-$(OBJDIR)/mem_interface_common.o: $(ROOTDIR)mem_interfgazzetta.grace/mem_interface_common.c
+$(OBJDIR)/mem_interface_common.o: $(ROOTDIR)mem_interface/mem_interface_common.c
 	$(CC) $(CFLAGS) -c -o $@ $^
 
 $(OBJDIR)/mem_interface_pool.o: $(ROOTDIR)mem_interface/mem_interface_pool.c

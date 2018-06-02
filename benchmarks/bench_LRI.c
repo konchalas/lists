@@ -119,12 +119,12 @@ void* my_thread(void* threadid)
     tinymt64_init(&randomvar, time(NULL)+__thread_id*100);
 #endif
     
-    ///* pin the thread to a core */
-    if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset))
-    {
-        fprintf(stderr, "Thread pinning failed!\n");
-        exit(1);
-    }
+    /////* pin the thread to a core */
+    //if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset))
+    //{
+    //    fprintf(stderr, "Thread pinning failed!\n");
+    //    exit(1);
+    //}
 
 
     printf("starting loading the table for thread %d\n",__thread_id);
