@@ -79,6 +79,7 @@ search_again:
 int contains(intset_t *set, val_t key, val_t *value) {
 	node_t *right_node, *left_node;
 	left_node = set->head;
+  printf("Size of node_t: %ld", sizeof(node_t)); 
 	
 	right_node = search(set, key, &left_node);
 	if ((!right_node->next) || right_node->key != key)

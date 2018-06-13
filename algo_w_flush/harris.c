@@ -66,6 +66,7 @@ search_again:
 		}
 		
 		/* Remove one or more marked nodes */
+    (*left_node)->flushed = false;
 		if (ATOMIC_CAS_MB(&(*left_node)->next, 
 						  left_node_next, 
 						  right_node)) {
@@ -88,8 +89,10 @@ int contains(intset_t *set, val_t key, val_t *value) {
 	right_node = search(set, key, &left_node);
 	if ((!right_node->next) || right_node->key != key)
 		return 0;
-	else 
+	else {
+    _mm_clflush(&right_node->next);
 		return 1;
+  }
 }
 
 /*
@@ -108,6 +111,7 @@ int insert(intset_t *set, val_t key, val_t val) {
 		_mm_clflush(new_node);
 		/* mem-bar between node creation and insertion */
 		AO_nop_full(); 
+    left_node->flushed = false;
 		if (ATOMIC_CAS_MB(&left_node->next, right_node, newnode)) {
 			_mm_clflush(&left_node->next);
 			return 1;
@@ -130,13 +134,15 @@ int remove_(intset_t *set, val_t val) {
 			return 0;
 		right_node_next = right_node->next;
 		if (!is_marked_ref((long) right_node_next))
+      right_node->flushed = false;
 			if (ATOMIC_CAS_MB(&right_node->next, 
-							  right_node_next, 
-							  get_marked_ref((long) right_node_next))) {
+					right_node_next, 
+					get_marked_ref((long) right_node_next))) {
 				_mm_clflush(&right_node->next);
 				break;
 			}
 	} while(1);
+  left_node->flushed = false;
 	if (!ATOMIC_CAS_MB(&left_node->next, right_node, right_node_next))
 		right_node = search(set, right_node->val, &left_node);
 	return 1;
