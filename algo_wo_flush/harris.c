@@ -77,15 +77,31 @@ search_again:
  * harris_find returns whether there is a node in the list owning value val.
  */
 int contains(intset_t *set, val_t key, val_t *value) {
+
+#ifdef WAIT_FREE_CONTAINS
+       val_t _key = key;
+       node_t *curr = set->head;
+       node_t *pred = curr;
+       while (curr->key < _key) {
+               pred = curr;
+               curr = (node_t*)get_unmarked_ref((long) curr->next);
+       }
+       if (curr->key == key) {
+               *value = curr->val;
+               return !is_marked_ref((long) curr->next);
+       }
+
+       return false;
+#else
 	node_t *right_node, *left_node;
 	left_node = set->head;
-  printf("Size of node_t: %ld", sizeof(node_t)); 
-	
+
 	right_node = search(set, key, &left_node);
 	if ((!right_node->next) || right_node->key != key)
 		return 0;
 	else 
 		return 1;
+#endif
 }
 
 /*

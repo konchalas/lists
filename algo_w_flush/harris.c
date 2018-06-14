@@ -71,6 +71,7 @@ search_again:
 						  left_node_next, 
 						  right_node)) {
 			_mm_clflush(&(*left_node)->next);
+      (*left_node)->flushed = true;
 			if (right_node->next && is_marked_ref((long) right_node->next))
 				goto search_again;
 			else return right_node;
@@ -83,6 +84,24 @@ search_again:
  * harris_find returns whether there is a node in the list owning value val.
  */
 int contains(intset_t *set, val_t key, val_t *value) {
+#ifdef WAIT_FREE_CONTAINS
+  val_t _key = key;
+  node_t *curr = set->head;
+  node_t *pred = curr;
+  while (curr->key < _key) {
+    pred = curr;
+    curr = (node_t*)get_unmarked_ref((long) curr->next);
+  }
+  if (curr->key == key) {
+    *value = curr->val;
+    if (curr->flushed == false)
+      _mm_clflush(&curr->next);
+    curr->flushed = true;
+    return !is_marked_ref((long) curr->next);
+  }
+
+  return false;
+  #else
 	node_t *right_node, *left_node;
 	left_node = set->head;
 	
@@ -90,9 +109,12 @@ int contains(intset_t *set, val_t key, val_t *value) {
 	if ((!right_node->next) || right_node->key != key)
 		return 0;
 	else {
-    _mm_clflush(&right_node->next);
+    if (right_node->flushed == false)
+      _mm_clflush(&right_node->next);
+    right_node->flushed = true;
 		return 1;
   }
+  #endif 
 }
 
 /*
@@ -114,6 +136,7 @@ int insert(intset_t *set, val_t key, val_t val) {
     left_node->flushed = false;
 		if (ATOMIC_CAS_MB(&left_node->next, right_node, newnode)) {
 			_mm_clflush(&left_node->next);
+      left_node->flushed = true;
 			return 1;
 		}
 	} while(1);
@@ -143,8 +166,12 @@ int remove_(intset_t *set, val_t val) {
 			}
 	} while(1);
   left_node->flushed = false;
-	if (!ATOMIC_CAS_MB(&left_node->next, right_node, right_node_next))
+	if (!ATOMIC_CAS_MB(&left_node->next, right_node, right_node_next)) {
+    _mm_clflush(&left_node->next);
+    left_node->flushed = true;
 		right_node = search(set, right_node->val, &left_node);
+  }
+
 	return 1;
 }
 

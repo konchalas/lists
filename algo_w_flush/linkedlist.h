@@ -41,6 +41,7 @@ typedef struct node {
 	val_t val;
 	val_t key;
 	bool flushed;
+    double padding[4];
 	struct node *next;
 } node_t;
 
