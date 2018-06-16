@@ -36,7 +36,6 @@
 node_t *search(intset_t *set, val_t val, node_t **left_node) {
 	node_t *left_node_next, *right_node;
 	left_node_next = set->head;
-	
 search_again:
 	do {
 		node_t *t = set->head;
@@ -156,7 +155,7 @@ int remove_(intset_t *set, val_t val) {
 		if (right_node->val != val)
 			return 0;
 		right_node_next = right_node->next;
-		if (!is_marked_ref((long) right_node_next))
+		if (!is_marked_ref((long) right_node_next)){
       right_node->flushed = false;
 			if (ATOMIC_CAS_MB(&right_node->next, 
 					right_node_next, 
@@ -164,6 +163,7 @@ int remove_(intset_t *set, val_t val) {
 				_mm_clflush(&right_node->next);
 				break;
 			}
+    }
 	} while(1);
   left_node->flushed = false;
 	if (!ATOMIC_CAS_MB(&left_node->next, right_node, right_node_next)) {
@@ -171,7 +171,6 @@ int remove_(intset_t *set, val_t val) {
     left_node->flushed = true;
 		right_node = search(set, right_node->val, &left_node);
   }
-
 	return 1;
 }
 

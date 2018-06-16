@@ -77,7 +77,6 @@ search_again:
  * harris_find returns whether there is a node in the list owning value val.
  */
 int contains(intset_t *set, val_t key, val_t *value) {
-
 #ifdef WAIT_FREE_CONTAINS
        val_t _key = key;
        node_t *curr = set->head;
