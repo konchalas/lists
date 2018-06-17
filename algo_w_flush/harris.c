@@ -108,9 +108,10 @@ int contains(intset_t *set, val_t key, val_t *value) {
 	if ((!right_node->next) || right_node->key != key)
 		return 0;
 	else {
-    if (right_node->flushed == false)
+    if (right_node->flushed == false){
       _mm_clflush(&right_node->next);
-    right_node->flushed = true;
+      right_node->flushed = true;
+    }
 		return 1;
   }
   #endif 
@@ -161,6 +162,7 @@ int remove_(intset_t *set, val_t val) {
 					right_node_next, 
 					get_marked_ref((long) right_node_next))) {
 				_mm_clflush(&right_node->next);
+        right_node->flushed = true;
 				break;
 			}
     }
