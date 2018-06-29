@@ -18,7 +18,7 @@
  * of the License.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but WITHOUT ANY  WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
@@ -41,7 +41,6 @@ search_again:
 	do {
 		node_t *t = set->head;
 		node_t *t_next = set->head->next;
-		
 		/* Find left_node and right_node */
 		do {
 			if (!is_marked_ref((long) t_next)) {
@@ -89,7 +88,6 @@ int contains(intset_t *set, val_t key, val_t *value) {
                *value = curr->val;
                return !is_marked_ref((long) curr->next);
        }
-
        return false;
 #else
 	node_t *right_node, *left_node;

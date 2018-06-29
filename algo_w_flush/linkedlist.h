@@ -41,8 +41,8 @@ typedef struct node {
 	val_t val;
 	val_t key;
 	bool flushed;
-    double padding[4];
-	struct node *next;
+  double padding[4];
+  struct node *next;
 } node_t;
 
 typedef struct intset {
@@ -66,8 +66,17 @@ inline int is_marked_ref(long i) {
   return (int) (i & (LONG_MIN+1));
 }
 
+inline int is_marked_flag(long i) {
+  return (int) (i & (LONG_MIN+2));
+}
+
 inline long unset_mark(long i) {
-	i &= LONG_MAX-1;
+	i &= LONG_MAX-3;
+	return i;
+}
+
+inline long unset_flag(long i) {
+	i &= LONG_MAX-2;
 	return i;
 }
 
@@ -77,10 +86,24 @@ inline long set_mark(long i) {
 	return i;
 }
 
+inline long set_flag(long i) {
+	i = unset_flag(i);
+	i += 2;
+	return i;
+}
+
 inline long get_unmarked_ref(long w) {
 	return unset_mark(w);
 }
 
+inline long get_unflagged_ref(long w) {
+	return unset_flag(w);
+}
+
 inline long get_marked_ref(long w) {
 	return set_mark(w);
+}
+
+inline long get_flagged_ref(long w) {
+	return set_flag(w);
 }
